@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOMEX · Analytics Blueprint Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #f4f5f9; font-family: 'Be Vietnam Pro', sans-serif; color: #111; min-height: 100vh; }
+.page { padding: 24px 32px 36px; max-width: 1480px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 800; text-align: center; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 20px; color: #1a2744; }
+h1 span { color: #c81e1e; }
+
+/* TABS NAV */
+.tabnav { display: flex; gap: 4px; padding: 10px 20px 0; background: #eef0f8; border-radius: 8px 8px 0 0; border: 1px solid #dce0ee; border-bottom: 2px solid #e4e8f4; }
+.tabnav a { font-size: 11px; font-weight: 600; padding: 10px 18px; border-radius: 6px 6px 0 0; color: #555; background: #e1e4ed; border: 1px solid #cdd2e1; border-bottom: none; cursor: pointer; transition: all .12s; text-decoration: none; }
+.tabnav a.on { background: #fff; color: #c81e1e; border-color: #dce0ee; border-bottom: 2px solid #fff; margin-bottom: -2px; }
+
+.tabpage { display: none; background: #fff; border: 1px solid #dce0ee; border-top: none; border-radius: 0 0 8px 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+.tabpage.on { display: block; }
+
+/* GRID LAYOUTS */
+.mgrid-3 { display: grid; grid-template-columns: 280px 1fr 280px; gap: 20px; align-items: start; }
+.mgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.report-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
+
+.mcell { position: relative; }
+.zone { border: 1.5px dashed #cdd2e1; border-radius: 10px; padding: 16px; background: #fafafc; }
+.zone-title { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #1a2744; text-align: center; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #e4e8f4; }
+
+/* BLOCKS & CARDS */
+.bx { border: 1.5px solid #dce0ee; border-radius: 8px; padding: 12px; background: #fff; margin-bottom: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+.bx:last-child { margin-bottom: 0; }
+.bx.navy { border-color: #1a2744; background: #f4f6fa; }
+.bx.red { border-color: #c81e1e; background: #fff5f5; }
+.bx.amber { border-color: #b45309; background: #fffbeb; }
+.bx.green { border-color: #047857; background: #f0fdf4; }
+
+.bn { font-size: 12px; font-weight: 700; color: #111; line-height: 1.4; }
+.bt { font-size: 10px; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.02em; }
+.bx.navy .bt { color: #1a2744; }
+.bx.red .bt { color: #c81e1e; }
+.bx.amber .bt { color: #b45309; }
+.bx.green .bt { color: #047857; }
+
+/* MATRIX TABLE */
+.matrix-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+.matrix-table th { background: #f4f5f9; padding: 8px; text-align: left; font-weight: 700; color: #555; border-bottom: 2px solid #e4e8f4; }
+.matrix-table td { padding: 8px; border-bottom: 1px solid #f0f0f4; color: #333; font-weight: 500; }
+.cell-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-align: center; width: 50px; }
+.cb-high { background: #fee2e2; color: #c81e1e; }
+.cb-mid { background: #fffbe8; color: #b45309; }
+.cb-low { background: #f3f4f6; color: #6b7280; }
+
+/* KPI TIERS */
+.kpi-container { display: flex; flex-direction: column; gap: 14px; }
+.kpi-section { border: 1px solid #e4e8f4; border-radius: 8px; overflow: hidden; }
+.kpi-head { padding: 6px 12px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.kpi-head.l1 { background: #fee2e2; color: #c81e1e; }
+.kpi-head.l2 { background: #fffbe8; color: #b45309; }
+.kpi-head.l3 { background: #eff6ff; color: #1d4ed8; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; padding: 12px; background: #fafbfe; }
+.kpi-item { background: #fff; border: 1px solid #e4e8f4; border-radius: 6px; padding: 8px 12px; font-size: 11px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 6px; }
+.kpi-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.l1 .kpi-dot { background: #c81e1e; }
+.l2 .kpi-dot { background: #b45309; }
+.l3 .kpi-dot { background: #1d4ed8; }
+
+/* REPORT BLOCKS (MỤC 4 STYLE) */
+.uc-group { border: 1px solid #e4e8f4; border-radius: 8px; overflow: hidden; margin-bottom: 4px; background: #fff; }
+.uc-head { padding: 8px 12px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+.uc-head .uc-type { font-size: 8px; padding: 2px 6px; border-radius: 4px; color: #fff; }
+.uc-grid { display: flex; flex-direction: column; gap: 4px; padding: 10px; background: #fafafc; }
+.uc-item { border: 1px solid #dce0ee; border-radius: 6px; padding: 8px 10px; background: #fff; }
+.uc-id { font-size: 9px; font-weight: 700; letter-spacing: .06em; margin-bottom: 2px; }
+.uc-name { font-size: 11px; font-weight: 600; color: #111; line-height: 1.35; }
+.uc-questions { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e4e8f4; display: flex; flex-direction: column; gap: 4px; }
+.q-row { display: flex; gap: 6px; font-size: 10.5px; color: #555; font-weight: 400; line-height: 1.4; }
+.q-dot { color: #c81e1e; font-weight: bold; flex-shrink: 0; }
+
+/* COLOR THEMES FOR REPORTS */
+.g-strat .uc-head { background: #fee2e2; color: #c81e1e; }
+.g-strat .uc-head .uc-type { background: #c81e1e; }
+.g-strat .uc-item { border-left: 3px solid #c81e1e; }
+.g-strat .uc-id { color: #c81e1e; }
+
+.g-ops .uc-head { background: #eef5e8; color: #047857; }
+.g-ops .uc-head .uc-type { background: #047857; }
+.g-ops .uc-item { border-left: 3px solid #047857; }
+.g-ops .uc-id { color: #047857; }
+.g-ops .q-dot { color: #047857; }
+
+.g-diag .uc-head { background: #fffbe8; color: #b45309; }
+.g-diag .uc-head .uc-type { background: #b45309; }
+.g-diag .uc-item { border-left: 3px solid #b45309; }
+.g-diag .uc-id { color: #b45309; }
+.g-diag .q-dot { color: #b45309; }
+
+.g-pred .uc-head { background: #f0ecff; color: #6d28d9; }
+.g-pred .uc-head .uc-type { background: #6d28d9; }
+.g-pred .uc-item { border-left: 3px solid #6d28d9; }
+.g-pred .uc-id { color: #6d28d9; }
+.g-pred .q-dot { color: #6d28d9; }
+
+footer { text-align: center; margin-top: 30px; font-size: 11px; color: #6b7280; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>Hệ thống báo cáo quản trị <span>KOMEX Việt Nam</span></h1>
+
+  <div class="tabnav">
+    <a class="on" onclick="switchTab('portrait', this)">01 · Chân dung Komex</a>
+    <a onclick="switchTab('kpis', this)">02 · Hệ thống chỉ số</a>
+    <a onclick="switchTab('reports', this)">03 · Báo cáo quản trị</a>
+  </div>
+
+  <!-- =================== TAB 1: CHÂN DUNG KOMEX =================== -->
+  <div class="tabpage on" id="tab-portrait">
+    <div class="mgrid-3">
+      
+      <!-- Cột trái: Vai trò & Mô hình -->
+      <div class="mcell">
+        <div class="zone">
+          <div class="zone-title">Mô hình kinh doanh</div>
+          
+          <div class="bx navy">
+            <div class="bn">Nhà phân phối đa thương hiệu</div>
+            <div class="bt">Không sở hữu thương hiệu · 13+ Brand</div>
+          </div>
+          
+          <div class="bx red">
+            <div class="bn">Mô hình Hybrid</div>
+            <div class="bt">Vận hành đồng thời B2C & B2B</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cột giữa: Ma trận Kênh bán -->
+      <div class="mcell">
+        <div class="zone" style="background: #fff;">
+          <div class="zone-title">Ma trận Doanh thu (Danh mục × Kênh bán)</div>
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Danh mục chiến lược</th>
+                <th>TikTok</th>
+                <th>Shopee</th>
+                <th>Website</th>
+                <th>Đại lý</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>📷 Camera an ninh</td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+                <td><span class="cell-badge cb-mid">Trung</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+              </tr>
+              <tr>
+                <td>🍳 Điện gia dụng</td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+                <td><span class="cell-badge cb-mid">Trung</span></td>
+                <td><span class="cell-badge cb-low">Thấp</span></td>
+              </tr>
+              <tr>
+                <td>📱 Điện thoại / Thiết bị thông minh</td>
+                <td><span class="cell-badge cb-mid">Trung</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+                <td><span class="cell-badge cb-mid">Trung</span></td>
+                <td><span class="cell-badge cb-mid">Trung</span></td>
+              </tr>
+              <tr>
+                <td>💻 Laptop / PC văn phòng</td>
+                <td><span class="cell-badge cb-low">Thấp</span></td>
+                <td><span class="cell-badge cb-mid">Trung</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+              </tr>
+              <tr>
+                <td>☀️ SOLAR (Ngành hàng tương lai)</td>
+                <td><span class="cell-badge cb-low">—</span></td>
+                <td><span class="cell-badge cb-low">—</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+                <td><span class="cell-badge cb-high">Cao</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Cột phải: Ngành hàng & Traction -->
+      <div class="mcell">
+        <div class="zone">
+          <div class="zone-title">Định hướng Ngành hàng</div>
+          
+          <div class="bx amber">
+            <div class="bn">Camera an ninh</div>
+            <div class="bt">Ngành hàng chiến lược · Tái mua cao</div>
+          </div>
+          
+          <div class="bx green">
+            <div class="bn">Năng lượng SOLAR</div>
+            <div class="bt">Đo lường Traction · Pipeline Dự án</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =================== TAB 2: HỆ THỐNG CHỈ SỐ =================== -->
+  <div class="tabpage" id="tab-kpis">
+    <div class="kpi-container">
+      
+      <!-- Tầng L1 -->
+      <div class="kpi-section l1">
+        <div class="kpi-head l1">L1 · North Star — Chỉ số sống còn</div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><span class="kpi-dot"></span>Net Channel Revenue</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Brand Gross Margin %</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Inventory Health Index</div>
+        </div>
+      </div>
+      
+      <!-- Tầng L2 -->
+      <div class="kpi-section l2">
+        <div class="kpi-head l2">L2 · Supporting — Vận hành đa kênh</div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><span class="kpi-dot"></span>Gross Margin %</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Net Revenue</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Net Margin %</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Inventory Turnover</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Channel GMV Split</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Effective Platform Margin</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Livestream GMV/Session</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Flash Sale Uplift</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Return Rate by Category</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Dealer Revenue %</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>B2B Inquiry Rate</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Category Revenue Mix</div>
+        </div>
+      </div>
+      
+      <!-- Tầng L3 -->
+      <div class="kpi-section l3">
+        <div class="kpi-head l3">L3 · Diagnostic — Đặc thù Komex</div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><span class="kpi-dot"></span>DIO (Days Inventory Outstanding)</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Return Rate</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Platform Fee % GMV</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>LTV / CAC Ratio</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>KOC Affiliate ROAS</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Warranty Claim Rate</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Camera B2B/B2C Split</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>SOLAR Pipeline Value</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Shopee Ads ROAS</div>
+          <div class="kpi-item"><span class="kpi-dot"></span>Price Deviation Score</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =================== TAB 3: BÁO CÁO QUẢN TRỊ =================== -->
+  <div class="tabpage" id="tab-reports">
+    <div class="report-grid">
+      
+      <!-- CỘT 1: STRATEGIC REPORTS -->
+      <div class="mcell g-strat">
+        <div class="uc-group">
+          <div class="uc-head">01 · Tổng quan kinh doanh <span class="uc-type">Strategic</span></div>
+          <div class="uc-grid">
+            <div class="uc-item">
+              <div class="uc-id">REPORT-01</div>
+              <div class="uc-name">Sức khoẻ doanh nghiệp tổng thể</div>
+              <div class="uc-questions">
+                <div class="q-row"><span class="q-dot">•</span>Net Revenue thực chênh lệch bao nhiêu so với GMV báo cáo, kênh nào bị xén nhiều nhất?</div>
+                <div class="q-row"><span class="q-dot">•</span>Gross Margin & Net Margin ở mức nào so với benchmark ngành?</div>
+                <div class="q-row"><span class="q-dot">•</span>Kênh B2B đóng góp bao nhiêu % và có scale song song kênh online?</div>
+                <div class="q-row"><span class="q-dot">•</span>Chi phí after-sales ăn bao nhiêu % lợi nhuận và tập trung ở brand nào?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CỘT 2: OPERATIONAL REPORTS -->
+      <div class="mcell g-ops">
+        <div class="uc-group">
+          <div class="uc-head">02 · Phân tích kênh bán <span class="uc-type">Operational</span></div>
+          <div class="uc-grid">
+            <div class="uc-item">
+              <div class="uc-id">REPORT-02</div>
+              <div class="uc-name">Hiệu quả vận hành & Đơn hàng</div>
+              <div class="uc-questions">
+                <div class="q-row"><span class="q-dot">•</span>TikTok vs Shopee vs Website: Kênh nào xử lý đơn và OTDR tốt nhất?</div>
+                <div class="q-row"><span class="q-dot">•</span>Chi phí fulfillment trên mỗi đơn của kênh nào đang kém hiệu quả?</div>
+                <div class="q-row"><span class="q-dot">•</span>Đơn hàng đại lý tỉnh thành có được xử lý đúng SLA so với online?</div>
+                <div class="q-row"><span class="q-dot">•</span>Kênh nào tỷ lệ đơn hủy cao bất thường do hết hàng hay lỗi vận hành?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="uc-group" style="margin-top: 12px;">
+          <div class="uc-head">06 · Quản trị kho hàng <span class="uc-type">Operational</span></div>
+          <div class="uc-grid">
+            <div class="uc-item">
+              <div class="uc-id">REPORT-06</div>
+              <div class="uc-name">Tồn kho & Vòng quay</div>
+              <div class="uc-questions">
+                <div class="q-row"><span class="q-dot">•</span>SKU nào tồn kho >90 ngày cần thanh lý gấp trước khi lỗi thời mất giá?</div>
+                <div class="q-row"><span class="q-dot">•</span>Danh mục nào bị out-of-stock ngay đúng peak demand do dự báo sai?</div>
+                <div class="q-row"><span class="q-dot">•</span>Phân bộ hàng giữa kho Hà Nội và TP.HCM có tối ưu theo demand thực tế?</div>
+                <div class="q-row"><span class="q-dot">•</span>Hàng tồn của thương hiệu nào đang đọng vốn nhiều nhất?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CỘT 3: DIAGNOSTIC REPORTS -->
+      <div class="mcell g-diag">
+        <div class="uc-group">
+          <div class="uc-head">03 · Tiếp thị & Marketing <span class="uc-type">Diagnostic</span></div>
+          <div class="uc-grid">
+            <div class="uc-item">
+              <div class="uc-id">REPORT-03</div>
+              <div class="uc-name">ROI & Hiệu suất Chiến dịch</div>
+              <div class="uc-questions">
+                <div class="q-row"><span class="q-dot">•</span>ROAS thực của Shopee Ads vs TikTok Ads kênh nào hiệu quả hơn?</div>
+                <div class="q-row"><span class="q-dot">•</span>KOC/Affiliate nào mang lại doanh thu cao nhất cho Camera và Gia dụng?</div>
+                <div class="q-row"><span class="q-dot">•</span>Ngân sách marketing có tương xứng với margin thực tế brand mang lại?</div>
+                <div class="q-row"><span class="q-dot">•</span>Flash sale tạo thêm doanh thu mới hay dịch chuyển cầu ngày thường?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="uc-group" style="margin-top: 12px;">
+          <div class="uc-head">04 · Phân tích khách hàng <span class="uc-type">Diagnostic</span></div>
+          <div class="uc-grid">
+            <div class="uc-item">
+              <div class="uc-id">REPORT-04</div>
+              <div class="uc-name">Chăm sóc & Khiếu nại</div>
+              <div class="uc-questions">
+                <div class="q-row"><span class="q-dot">•</span>Nguyên nhân hoàn hàng chủ yếu là gì (lỗi sản phẩm hay do khó lắp đặt)?</div>
+                <div class="q-row"><span class="q-dot">•</span>Khiếu nại tập trung vào brand nào, phản ánh đúng chất lượng NCC không?</div>
+                <div class="q-row"><span class="q-dot">•</span>TikTok có return rate cao do mua ngẫu hứng, ảnh hưởng margin thế nào?</div>
+                <div class="q-row"><span class="q-dot">•</span>Khách B2B có tỷ lệ hài lòng và tái mua cao hơn B2C không?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="uc-group" style="margin-top: 12px;">
+          <div class="uc-head">05 · Hiệu suất sản phẩm <span class="uc-type">Diagnostic</span></div>
+          <div class="uc-grid">
+            <div class="uc-item">
+              <div class="uc-id">REPORT-05</div>
+              <div class="uc-name">Doanh thu & Margin theo SKU</div>
+              <div class="uc-questions">
+                <div class="q-row"><span class="q-dot">•</span>Top SKU doanh thu và Top SKU margin có lệch nhau? Top bán chạy có thực sự lãi?</div>
+                <div class="q-row"><span class="q-dot">•</span>Sản phẩm nào mạnh trên TikTok nhưng yếu trên Shopee để tối ưu phân bổ?</div>
+                <div class="q-row"><span class="q-dot">•</span>Thương hiệu nào gánh tỷ lệ bảo hành cao nhất làm giảm lợi nhuận?</div>
+                <div class="q-row"><span class="q-dot">•</span>Danh mục SOLAR và Smart Home có đủ traction mở rộng không?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CỘT 4: PREDICTIVE REPORTS -->
+      <div class="mcell g-pred">
+        <div class="uc-group">
+          <div class="uc-head">07 · Dự báo & Kế hoạch <span class="uc-type">Predictive</span></div>
+          <div class="uc-grid">
+            <div class="uc-item">
+              <div class="uc-id">REPORT-07</div>
+              <div class="uc-name">Forecast & Phân bổ ngân sách</div>
+              <div class="uc-questions">
+                <div class="q-row"><span class="q-dot">•</span>Cần nhập bao nhiêu hàng cho mỗi danh mục trước mùa peak (Tết, 11.11)?</div>
+                <div class="q-row"><span class="q-dot">•</span>Doanh thu tháng tới đang đi đúng hay lệch dưới kế hoạch năm, do kênh nào?</div>
+                <div class="q-row"><span class="q-dot">•</span>Ngân sách marketing quý tới phân bổ thế nào giữa Ads và KOC Affiliate?</div>
+                <div class="q-row"><span class="q-dot">•</span>Ngành hàng SOLAR có đủ traction để tăng đầu tư nhập hàng năm tới?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <p>KOMEX Analytics Blueprint Dashboard · Hướng tiếp cận tinh gọn & Tối ưu câu hỏi quản trị</p>
+  </footer>
+</div>
+
+<script>
+function switchTab(tabId, element) {
+  document.querySelectorAll('.tabnav a').forEach(a => a.classList.remove('on'));
+  document.querySelectorAll('.tabpage').forEach(page => page.classList.remove('on'));
+  element.classList.add('on');
+  document.getElementById('tab-' + tabId).classList.add('on');
+}
+</script>
+</body>
+</html>
